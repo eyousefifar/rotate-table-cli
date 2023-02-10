@@ -1,6 +1,5 @@
 export function buildMakeTable() {
   return function makeTable(table: number[]) {
-    const tableLength = table.length;
     const squareDimensionLen = Math.sqrt(table.length);
     if (!Number.isInteger(squareDimensionLen)) {
       const madeTable = {
@@ -20,7 +19,7 @@ export function buildMakeTable() {
 
     const centerIndex = Math.floor(squareDimensionLen / 2); // number of steps to shift the table
     for (let startIndex = 0; startIndex < centerIndex; startIndex++) {
-      for (let index = 0; index < tableLength; index++) {
+      for (let index = 0; index < table.length; index++) {
         const i = Math.floor(index / squareDimensionLen); // row
         const j = index % squareDimensionLen; // column
         if (
@@ -78,11 +77,11 @@ export function buildMakeTable() {
     const madeTable = {
       get: {
         table: () => table,
-        shiftedTable: () => rotatedTable.flat(),
+        shiftedTable: () => rotatedTable,
       },
       object: () => ({
         table,
-        shiftedTable: rotatedTable.flat(),
+        shiftedTable: rotatedTable,
       }),
       error: undefined,
     };
