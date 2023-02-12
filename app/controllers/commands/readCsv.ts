@@ -3,6 +3,7 @@ import { rotateTable } from "../../usecases";
 import type { controllerTypes } from "../../types";
 
 export function buildReadCsv(args: controllerTypes.IBuildReadCsv) {
+
   const { fileExists, createReadStream } = args;
   //   function transform() {
 
@@ -23,14 +24,26 @@ export function buildReadCsv(args: controllerTypes.IBuildReadCsv) {
       )
       .pipe(
         transform((row) => {
-          return {
-            id: Number(row.id),
-            array: JSON.parse(row.json),
-          };
+          try {
+            return {
+              id: Number(row.id),
+              array: JSON.parse(row.json),
+            }
+          } catch (error) {
+            if(error instanceof SyntaxError) {
+              return {
+                id: Number(row.id),
+                array: [],
+              }
+            }
+            // error
+          }
+          
         })
       );
     process.stdout.write("id,json,is_valid\n");
     for await (const row of transformed) {
+      // 
       const result = rotateTable(row.id, row.array);
       process.stdout.write(result + "\n");
     }
