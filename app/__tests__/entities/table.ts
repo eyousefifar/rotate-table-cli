@@ -9,11 +9,18 @@ describe("table entity", () => {
     expect(madeTable.get.shiftedTable()).toEqual([1]);
   });
   it("should rotate even ( 4 ) square tables", () => {
-    const table = [40, 20, 90, 10];
-    const madeTable = makeTable(table);
+    const table = [
+      [40, 20],
+      [90, 10],
+    ];
+    const rotatedTable = [
+      [90, 40],
+      [10, 20],
+    ];
+    const madeTable = makeTable(table.flat());
     expect(madeTable.error).toBeUndefined();
 
-    expect(madeTable.get.shiftedTable()).toEqual([90, 40, 10, 20]);
+    expect(madeTable.get.shiftedTable()).toEqual(rotatedTable.flat());
   });
   it("should rotate even ( 16 ) square tables", () => {
     const table = [
@@ -34,10 +41,19 @@ describe("table entity", () => {
     expect(madeTable.get.shiftedTable()).toEqual(rotatedTable.flat());
   });
   it("should rotate odd  ( 9 ) square tables", () => {
-    const table = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    const madeTable = makeTable(table);
+    const table = [
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 9],
+    ];
+    const rotatedTable = [
+      [4, 1, 2],
+      [7, 5, 3],
+      [8, 9, 6],
+    ];
+    const madeTable = makeTable(table.flat());
     expect(madeTable.error).toBeUndefined();
-    expect(madeTable.get.shiftedTable()).toEqual([4, 1, 2, 7, 5, 3, 8, 9, 6]);
+    expect(madeTable.get.shiftedTable()).toEqual(rotatedTable.flat());
   });
   it("should rotate odd  ( 25 ) square tables", () => {
     const table = [
