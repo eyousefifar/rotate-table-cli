@@ -1,6 +1,7 @@
 export function buildMakeTable() {
   return function makeTable(table: number[]) {
     const squareDimensionLen = Math.sqrt(table.length);
+
     if (!Number.isInteger(squareDimensionLen)) {
       const madeTable = {
         get: {
@@ -15,73 +16,128 @@ export function buildMakeTable() {
       };
       return madeTable;
     }
-    const rotatedTable: number[] = Array.from(table);
-
+    let rightColumnTemp: number | undefined = undefined;
+    let firstRowTemp: number | undefined = undefined;
     const centerIndex = Math.floor(squareDimensionLen / 2); // number of steps to shift the table
     for (let startIndex = 0; startIndex < centerIndex; startIndex++) {
-      for (let index = 0; index < table.length; index++) {
+      const boundary =
+        squareDimensionLen - 2 * startIndex === squareDimensionLen
+          ? squareDimensionLen - 1
+          : squareDimensionLen - 2 * startIndex;
+      const traverse = {
+        start: startIndex * squareDimensionLen + startIndex,
+        end:
+          squareDimensionLen * squareDimensionLen -
+          1 -
+          squareDimensionLen * startIndex -
+          startIndex,
+      };
+      // const nextTraverse = {
+      //   start: (startIndex + 1) * squareDimensionLen + startIndex + 1,
+      //   end:
+      //     squareDimensionLen * squareDimensionLen -
+      //     1 -
+      //     squareDimensionLen * (startIndex + 1) -
+      //     (startIndex + 1),
+      // };
+      rightColumnTemp = undefined;
+      firstRowTemp = undefined;
+      for (let index = traverse.start; index <= traverse.end; index++) {
+        // if (index >= nextTraverse.start && index <= nextTraverse.end) {
+        //   continue;
+        // }
         const i = Math.floor(index / squareDimensionLen); // row
         const j = index % squareDimensionLen; // column
-        if (
-          i === startIndex && // top row
-          j >= startIndex && // first column of top row
-          j < squareDimensionLen - startIndex // last column of top row
-        ) {
-          if (j !== squareDimensionLen - 1 - startIndex) {
-            // if not last column of top row
-            rotatedTable[i * squareDimensionLen + j + 1] = table[index]; // shift to the right
-            continue;
-          }
-          // if last column of top row, shift to the bottom
-          rotatedTable[(i + 1) * squareDimensionLen + j] = table[index];
+        if (i > boundary || i < startIndex) {
+          // console.log("i not in boundary", i, boundary);
+
           continue;
         }
-
-        if (
-          j === squareDimensionLen - 1 - startIndex && // last column
-          i > startIndex && // not the top row
-          i < squareDimensionLen - startIndex // in boundary
-        ) {
-          if (i !== squareDimensionLen - 1 - startIndex) {
-            // if not last row
-            rotatedTable[(i + 1) * squareDimensionLen + j] = table[index]; // shift the right edge down
-            continue;
-          }
-          // if the last row of the table
-          rotatedTable[i * squareDimensionLen + j - 1] = table[index];
+        if (j > boundary || j < startIndex) {
+          // console.log("j not in boundary", j, boundary);
           continue;
         }
-
+        // odd and center
         if (
-          i === squareDimensionLen - 1 - startIndex && // last row
-          j >= startIndex &&
-          j < squareDimensionLen - startIndex // in boundary
+          squareDimensionLen % 2 !== 0 &&
+          i === centerIndex &&
+          j === centerIndex
         ) {
-          if (j !== startIndex) {
-            rotatedTable[i * squareDimensionLen + j - 1] = table[index]; // shift the bottom edge left
-            continue;
-          }
-          rotatedTable[(i - 1) * squareDimensionLen + j] = table[index]; // shift the left edge up
+          // console.log("center", i, j);
+
           continue;
         }
+        // if (i === boundary - 1 && j === boundary) {
+        //   rightColumnTemp = table[index + squareDimensionLen];
+        // }
+        // first row
+        if (i === startIndex) {
+          // last member of first row
+          if (j === boundary) {
+            continue;
+          }
+          if (j === startIndex) {
+            firstRowTemp = table[index + 1];
+            table[index + 1] = table[index];
+            continue;
+          }
+          if (!firstRowTemp) continue;
+          const save = table[index + 1];
+          table[index + 1] = firstRowTemp;
+          firstRowTemp = save;
+        }
+        // first column
+        if (j === startIndex) {
+          if (i === startIndex) {
+            continue;
+          }
+          table[index - squareDimensionLen] = table[index];
+        }
+        // last column
+        if (j === boundary) {
+          // if (i === boundary - 1) {
+          //   rightColumnTemp = table[index + squareDimensionLen];
+          // }
 
-        if (
-          j == startIndex && // first column
-          i >= startIndex &&
-          i < squareDimensionLen - startIndex // in boundary
-        ) {
-          rotatedTable[(i - 1) * squareDimensionLen + j] = table[index];
+          if (i === startIndex + 1 && firstRowTemp) {
+            if (boundary > 1 && i !== boundary) {
+              rightColumnTemp = table[index + squareDimensionLen];
+              table[index + squareDimensionLen] = table[index];
+            }
+
+            table[index] = firstRowTemp;
+          } else if (!(i === startIndex || i === boundary) && rightColumnTemp) {
+            const save = table[index + squareDimensionLen];
+            table[index + squareDimensionLen] = rightColumnTemp;
+            rightColumnTemp = save;
+          }
+
+          // if (i === startIndex || i === boundary) {
+          //   continue;
+          // }
+        }
+
+        // last row
+        if (i === boundary) {
+          if (j === boundary) {
+            continue;
+          }
+          if (j === boundary - 1 && rightColumnTemp) {
+            table[index] = rightColumnTemp;
+            continue;
+          }
+          table[index] = table[index + 1];
         }
       }
     }
     const madeTable = {
       get: {
         table: () => table,
-        shiftedTable: () => rotatedTable,
+        shiftedTable: () => table,
       },
       object: () => ({
         table,
-        shiftedTable: rotatedTable,
+        shiftedTable: table,
       }),
       error: undefined,
     };
